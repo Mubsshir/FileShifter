@@ -60,10 +60,8 @@ namespace FileShifter
         {
             try
             {
-
                 int totalFiles = fileList.Length;
-                int filesPerThread = (int)Math.Ceiling((double)totalFiles / No_Of_SubDir);
-
+                int filesPerThread = totalFiles / No_Of_SubDir;
                 Thread[] threads = new Thread[No_Of_SubDir];
                 DirectoryInfo[] subDirInfos = new DirectoryInfo(DestinationFolder).GetDirectories();
                 int fileIndex = 0;
@@ -75,19 +73,21 @@ namespace FileShifter
 
                     Thread thread = new Thread(() =>
                     {
-                        for (int i = 0; i < filesToMove; i++)
+                        for (int i = 0; i < filesPerThread && fileIndex < totalFiles; i++)
                         {
-                            string sourcePath = fileList[fileIndex + i];
+                            string sourcePath = fileList[fileIndex];
                             string fileName = Path.GetFileName(sourcePath);
                             string destinationPath = Path.Combine(subDirInfos[subDirIndex].FullName, fileName);
                             Fn_MoveFile(sourcePath, destinationPath);
+
+                            fileIndex++;
                         }
                     });
 
                     thread.Start();
                     threads[threadIndex] = thread;
 
-                    fileIndex += filesToMove-1;
+                    fileIndex += filesToMove;
                     threadIndex++;
                     subDirIndex++;
                 }
