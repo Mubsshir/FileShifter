@@ -62,19 +62,24 @@ namespace FileShifter
                 Console.WriteLine("total files:"+totalFiles);
                 Console.WriteLine("total subdir:"+totalSubDir);
                 Console.WriteLine("File per subdir:" + filePerSubDir);
+                Thread.Sleep(2000);
                 int fileIndex = 0;
                 int subDirIndex = 0;
                 while (fileIndex < totalFiles)
                 {
                     int fileToMove = Math.Min(filePerSubDir, totalFiles - fileIndex);
-                    for (int i = 0; i < fileToMove; i++)
-                    {
-                        string sourceFilePath = fileList[fileIndex+i].FullName;
-                        string destination = Path.Combine(subdirInfo[subDirIndex].FullName, fileList[i].Name);
-                        Fn_MoveFile(sourceFilePath, destination);
-                    }
+                    Thread thread = new Thread(()=> {
+                        for (int i = 0; i < fileToMove; i++)
+                        {
+                            string sourceFilePath = fileList[fileIndex + i].FullName;
+                            string destination = Path.Combine(subdirInfo[subDirIndex].FullName, fileList[i].Name);
+                            Fn_MoveFile(sourceFilePath, destination);
+                        }
+                    });
+                    thread.Start();
                     subDirIndex++;
                     fileIndex += fileToMove;
+                    thread.Join();
                 }
             }
             catch (Exception ex)
