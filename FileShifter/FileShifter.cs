@@ -77,14 +77,12 @@ namespace FileShifter
                     });
                     
                     thread.Start();
-                    threads.Add(thread);
+                   // threads.Add(thread);
+                    thread.Join();
                     subDirIndex++;
                     fileIndex += fileToMove;
                 }
-                foreach(Thread thread in threads)
-                {
-                    thread.Join();
-                }
+                
             }
             catch (Exception ex)
             {
