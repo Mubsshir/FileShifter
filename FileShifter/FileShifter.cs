@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Threading;
@@ -58,27 +59,30 @@ namespace FileShifter
                 int totalFiles = fileList.Length;
                 DirectoryInfo[] subdirInfo = new DirectoryInfo(DestinationFolder).GetDirectories();
                 int totalSubDir = subdirInfo.Length;
-                int filePerSubDir =(int)Math.Ceiling( (double)totalFiles / totalSubDir);    
-                Console.WriteLine("total files:"+totalFiles);
-                Console.WriteLine("total subdir:"+totalSubDir);
-                Console.WriteLine("File per subdir:" + filePerSubDir);
+                int filePerSubDir =(int)Math.Ceiling( (double)totalFiles / totalSubDir);
                 Thread.Sleep(2000);
                 int fileIndex = 0;
                 int subDirIndex = 0;
-                while (fileIndex < totalFiles)
+                List<Thread> threads=new List<Thread>() ;
+                while (fileIndex < totalFiles && subDirIndex<No_Of_SubDir)
                 {
                     int fileToMove = Math.Min(filePerSubDir, totalFiles - fileIndex);
                     Thread thread = new Thread(()=> {
-                        for (int i = 0; i < fileToMove; i++)
+                        for (int i = 0; i < fileToMove && (fileIndex + i) < totalFiles; i++)
                         {
                             string sourceFilePath = fileList[fileIndex + i].FullName;
-                            string destination = Path.Combine(subdirInfo[subDirIndex].FullName, fileList[i].Name);
+                            string destination = Path.Combine(subdirInfo[subDirIndex].FullName, fileList[fileIndex+i].Name);
                             Fn_MoveFile(sourceFilePath, destination);
                         }
                     });
+                    
                     thread.Start();
+                    threads.Add(thread);
                     subDirIndex++;
                     fileIndex += fileToMove;
+                }
+                foreach(Thread thread in threads)
+                {
                     thread.Join();
                 }
             }
