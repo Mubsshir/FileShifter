@@ -51,7 +51,7 @@ namespace FileShifter
                 return null;
             }
         }
-
+        //move file with multiple threads
         public void Fn_MoveFilesToTarget(FileInfo[] fileList)
         {
             try
