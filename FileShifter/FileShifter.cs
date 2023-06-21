@@ -28,7 +28,7 @@ namespace FileShifter
         }
 
         //fn for storing all the source file in one array
-        public string[] Fn_ReadFilesFromSource()
+        public FileInfo[] Fn_ReadFilesFromSource()
         {
             DirectoryInfo directoryInfo = new DirectoryInfo(SourceFolder);
             if (directoryInfo.Exists)
@@ -41,12 +41,8 @@ namespace FileShifter
                 }
                 int totalFiles = sourceFileList.Length;
                 System.Console.WriteLine("Total File Found: " + totalFiles);
-                string[] fileNames=new string[totalFiles];
-                for (int i= 0;i < totalFiles; i++)
-                {
-                    fileNames[i] = sourceFileList[i].FullName;
-                }
-                return fileNames;
+               
+                return sourceFileList;
             }
            else
             {
@@ -55,52 +51,35 @@ namespace FileShifter
             }
         }
 
-        // Create threads based on number of sub dir and start moving the files using the threads
-        public void Fn_MoveFilesToTarget(string[] fileList)
+        public void Fn_MoveFilesToTarget(FileInfo[] fileList)
         {
             try
             {
                 int totalFiles = fileList.Length;
-                int filesPerThread = totalFiles / No_Of_SubDir;
-                Thread[] threads = new Thread[No_Of_SubDir];
-                DirectoryInfo[] subDirInfos = new DirectoryInfo(DestinationFolder).GetDirectories();
+                DirectoryInfo[] subdirInfo = new DirectoryInfo(DestinationFolder).GetDirectories();
+                int totalSubDir = subdirInfo.Length;
+                int filePerSubDir =(int)Math.Ceiling( (double)totalFiles / totalSubDir);    
+                Console.WriteLine("total files:"+totalFiles);
+                Console.WriteLine("total subdir:"+totalSubDir);
+                Console.WriteLine("File per subdir:" + filePerSubDir);
                 int fileIndex = 0;
-                int threadIndex = 0;
                 int subDirIndex = 0;
                 while (fileIndex < totalFiles)
                 {
-                    int filesToMove = Math.Min(filesPerThread, totalFiles - fileIndex);
-
-                    Thread thread = new Thread(() =>
+                    int fileToMove = Math.Min(filePerSubDir, totalFiles - fileIndex);
+                    for (int i = 0; i < fileToMove; i++)
                     {
-                        for (int i = 0; i < filesPerThread && fileIndex < totalFiles; i++)
-                        {
-                            string sourcePath = fileList[fileIndex];
-                            string fileName = Path.GetFileName(sourcePath);
-                            string destinationPath = Path.Combine(subDirInfos[subDirIndex].FullName, fileName);
-                            Fn_MoveFile(sourcePath, destinationPath);
-
-                            fileIndex++;
-                        }
-                    });
-
-                    thread.Start();
-                    threads[threadIndex] = thread;
-
-                    fileIndex += filesToMove;
-                    threadIndex++;
+                        string sourceFilePath = fileList[fileIndex+i].FullName;
+                        string destination = Path.Combine(subdirInfo[subDirIndex].FullName, fileList[i].Name);
+                        Fn_MoveFile(sourceFilePath, destination);
+                    }
                     subDirIndex++;
-                }
-
-                // Wait for all threads to finish
-                foreach (Thread thread in threads)
-                {
-                    thread.Join();
+                    fileIndex += fileToMove;
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine("Error while processing files: "+ex.Message);
             }
         }
       
@@ -121,7 +100,7 @@ namespace FileShifter
             try
             {
                 Fn_Make_SubDir();
-                string[] files = Fn_ReadFilesFromSource();
+                FileInfo[] files = Fn_ReadFilesFromSource();
                 if (files!=null)
                 {
                     Fn_MoveFilesToTarget(files);
