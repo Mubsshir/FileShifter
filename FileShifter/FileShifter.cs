@@ -35,14 +35,8 @@ namespace FileShifter
             if (directoryInfo.Exists)
             {
                 FileInfo[] sourceFileList = directoryInfo.GetFiles("*.*");
-                Console.WriteLine("Following files Found");
-                foreach (var file in sourceFileList)
-                {
-                    System.Console.WriteLine(file.Name);
-                }
                 int totalFiles = sourceFileList.Length;
                 System.Console.WriteLine("Total File Found: " + totalFiles);
-               
                 return sourceFileList;
             }
            else
@@ -51,7 +45,7 @@ namespace FileShifter
                 return null;
             }
         }
-        //move file with multiple threads
+        //move files with multiple threads
         public void Fn_MoveFilesToTarget(FileInfo[] fileList)
         {
             try
@@ -60,10 +54,10 @@ namespace FileShifter
                 DirectoryInfo[] subdirInfo = new DirectoryInfo(DestinationFolder).GetDirectories();
                 int totalSubDir = subdirInfo.Length;
                 int filePerSubDir =(int)Math.Ceiling( (double)totalFiles / totalSubDir);
-                Thread.Sleep(2000);
                 int fileIndex = 0;
                 int subDirIndex = 0;
-                List<Thread> threads=new List<Thread>() ;
+        
+                //List<Thread> threads=new List<Thread>() ;
                 while (fileIndex < totalFiles && subDirIndex<No_Of_SubDir)
                 {
                     int fileToMove = Math.Min(filePerSubDir, totalFiles - fileIndex);
@@ -108,10 +102,14 @@ namespace FileShifter
             {
                 Fn_Make_SubDir();
                 FileInfo[] files = Fn_ReadFilesFromSource();
-                if (files!=null)
+                if (files.Length>0)
                 {
                     Fn_MoveFilesToTarget(files);
                     Console.WriteLine("Files move  successfully");
+                }
+                else
+                {
+                    Console.WriteLine("Source Directory is empty");
                 }
             }
             catch (Exception  ex)
