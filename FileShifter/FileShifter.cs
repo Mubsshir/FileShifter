@@ -42,7 +42,7 @@ namespace FileShifter
            else
             {
                 System.Console.WriteLine("No Such Directory Present");
-                return null;
+                return new FileInfo[0];
             }
         }
         //move files with multiple threads
@@ -102,7 +102,7 @@ namespace FileShifter
             {
                 Fn_Make_SubDir();
                 FileInfo[] files = Fn_ReadFilesFromSource();
-                if (files.Length>0)
+                if (files.Length>0 )
                 {
                     Fn_MoveFilesToTarget(files);
                     Console.WriteLine("Files move  successfully");
